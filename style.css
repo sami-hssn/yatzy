@@ -1,11 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Rock+Salt&display=swap');
 
-h1{
+h1 {
     color: red;
-    font-size: 32px;
+    font-size: 55px;
 }
+
+h3{
+    font-size: 25px;
+}
+
 body {
-    background-image: url('paper.jpg');
+    background-image: url('./docs/design_system/paper.jpg');
     font-family: 'Rock Salt', serif;
     display: flex;
     justify-content: center;
@@ -17,8 +22,8 @@ body {
 section {
     text-align: center;
     border-radius: 10px;
-    width: 90vw; /* Use a percentage width for responsiveness */
-    max-width: 400px; /* Limit maximum width */
+    width: 90vw; 
+    max-width: 400px; 
     margin: auto;
     margin-top: 75px;
 }
@@ -29,19 +34,19 @@ section {
 
 .game--container {
     display: grid;
-    grid-template-columns: repeat(3, 1fr); /* Use 1fr for equal distribution */
-    width: 100%; /* Full width of the section */
-    margin: 40px 0 20px; /* Simplified margins */
+    grid-template-columns: repeat(3, 120px); 
+    grid-template-rows: repeat(3, 120px); 
+    margin: -15px 0 20px; 
+    justify-content: center; 
 }
 
 .cell {
-    width: 100%; /* Full width of the grid item */
-    padding-bottom: 100%; /* Maintain aspect ratio */
-    position: relative; /* Necessary for inner positioning */
+    width: 120px; 
+    height: 120px;
     box-shadow: 0 0 0 1px #333333;
     border: 1px solid #333333;
     cursor: pointer;
-    font-size: 4vw; /* Responsive font size */
+    font-size: 4vw; 
     display: flex;
     justify-content: center;
     align-items: center;
@@ -54,5 +59,13 @@ button {
     border-radius: 5px;
     color: #fff;
     cursor: pointer;
-    background-color: #333; /* Added background color for visibility */
+    background-color: #333; 
+}
+
+.cell[data-player="X"] {
+    color: blue; 
+}
+
+.cell[data-player="O"] {
+    color: green; 
 }

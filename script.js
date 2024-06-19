@@ -30,6 +30,7 @@ window.addEventListener('DOMContentLoaded', () => { //Waits for the html to load
                 
                 game.state [selectedCellIndex] = game.player; //Adds players symbol to game
                 selectedCell.innerHTML = game.player; //Adds players symbol to board
+                selectedCell.setAttribute('data-player', game.player); // Sets data-player attribute
                 console.log(game.state); //For debug purposes 
                 
                 //If there is a win, announce it 
@@ -62,7 +63,7 @@ window.addEventListener('DOMContentLoaded', () => { //Waits for the html to load
         }
         //resets the game data 
         game.resetGame= function(){
-            game.player='X';
+            game.player = Math.random() < 0.5 ? 'X' : 'O';
             game.index=0;
             game.state.fill('');
             game.status = 'started';
