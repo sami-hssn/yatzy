@@ -1,34 +1,52 @@
+@import url('https://fonts.googleapis.com/css2?family=Rock+Salt&display=swap');
 
-body {
-    background-color: #bbebdb;
+h1{
+    color: red;
+    font-size: 32px;
 }
+body {
+    background-image: url('paper.jpg');
+    font-family: 'Rock Salt', serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
 section {
     text-align: center;
     border-radius: 10px;
-    width: 400px;
+    width: 90vw; /* Use a percentage width for responsiveness */
+    max-width: 400px; /* Limit maximum width */
     margin: auto;
     margin-top: 75px;
 }
+
 .game--title {
     padding-top: 20px;
 }
+
 .game--container {
     display: grid;
-    grid-template-columns: repeat(3, auto);
-    width: 150px;
-    margin: 120px;
-    margin-bottom: 10px;
-    margin-top: 10px;
+    grid-template-columns: repeat(3, 1fr); /* Use 1fr for equal distribution */
+    width: 100%; /* Full width of the section */
+    margin: 40px 0 20px; /* Simplified margins */
 }
+
 .cell {
-    width: 150px;
-    height: 150px;
+    width: 100%; /* Full width of the grid item */
+    padding-bottom: 100%; /* Maintain aspect ratio */
+    position: relative; /* Necessary for inner positioning */
     box-shadow: 0 0 0 1px #333333;
     border: 1px solid #333333;
     cursor: pointer;
-    line-height: 150px;
-    font-size: 50px;
+    font-size: 4vw; /* Responsive font size */
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
+
 button {
     margin-bottom: 20px;
     height: 30px;
@@ -36,4 +54,5 @@ button {
     border-radius: 5px;
     color: #fff;
     cursor: pointer;
+    background-color: #333; /* Added background color for visibility */
 }
