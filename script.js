@@ -1,62 +1,130 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const cells = document.querySelectorAll('.cell');
+document.addEventListener('DOMContentLoaded', () => { //Waits for the html to load before running the script
+    
+    const cells = document.querySelectorAll('.cell'); //Connecting to the cells in the html
+    const resetButton = document.getElementById('game--restart'); //Connecting to the reset button in the html 
+    
+
+    //TicTacToe object representing a game 
     var TicTacToe = (function(){
+
+        //Setting Initial state of game
         var game ={};
         game.state=['', '', '', 
                     '', '', '', 
                     '', '', ''];
 
         game.player='X';
-        game.winner='';
+        game.index=0; 
 
+        
         game.takeTurn = function(event){
             const selectedCell = event.target;
             const selectedCellIndex = parseInt(selectedCell.getAttribute('data-cell-index'));
-            game [selectedCellIndex] = game.player;
-            if (checkWin()){
-                announceWinner();
-            }
-            else if (checkDraw()){
-                announceDraw();
+
+            if (game.state[selectedCellIndex]==''){
+                game.state [selectedCellIndex] = game.player; //Adds players symbol to game
+                selectedCell.innerHTML = game.player; //Adds players symbol to board
+                console.log(game.state);
+                
+                if (checkWin()){
+                    announceWinner();
+                    console.log('Winner');
+                }
+                
+                else if (checkDraw()){
+                    announceDraw();
+                    console.log('draw')
+                }
+            
+                else{
+                    console.log(game.index);
+                    game.index++;
+                    game.changePlayer();
+                }
             }
             else{
-                changePlayer();
+                //implement invalid move
             }
+
             
         }
+
         game.resetGame= function(){
-            //Implement Reset
+            game.player='X';
+            game.index=0;
+            game.state.fill('');
+            cells.forEach(cells=> cells.innerHTML='');
+
+
         }
 
-        function changePlayer(){
-            if (this.player=='X'){
-                this.player='Y';
+        game.changePlayer= function(){
+            if (game.player=='X'){
+                game.player='O';
             }
             else{
-                this.player='X';
+                game.player='X';
             }
         }
         function checkWin(){
-            //Implement checkWin
-            return true;
-        }
-        function checkDraw(){
-            //Implement checkDraw
-            return false;
-        }
-
-        function announceWinner(){
-            if (this.player=='X'){
-                game.winner='X'
+            
+            //Top row
+            if( game.state[0]==game.player && game.state[1]==game.player  && game.state[2]==game.player ){
+                return true;
+            }
+            //Middle row
+            else if( game.state[3]==game.player && game.state[4]==game.player  && game.state[5]==game.player){
+                return true;
+            }
+            //Bottom row
+            else if( game.state[6]==game.player && game.state[7]==game.player  && game.state[8]==game.player){
+                return true;
+            }
+            //Right column
+            else if( game.state[0]==game.player && game.state[3]==game.player  && game.state[6]==game.player){
+                return true;
+            }
+            //Middle column 
+            else if( game.state[1]==game.player && game.state[4]==game.player  && game.state[7]==game.player){
+                return true;
+            }
+            //Left column
+            else if( game.state[2]==game.player && game.state[5]==game.player  && game.state[8]==game.player){
+                return true;
+            }
+            //left to right diagonal 
+            else if( game.state[0]==game.player && game.state[4]==game.player  && game.state[8]==game.player){
+                return true;
+            }
+            //right to left diagonal 
+            else if( game.state[2]==game.player && game.state[4]==game.player  && game.state[6]==game.player){
+                return true;
             }
             else{
-                this.winner='Y';
+                console.log("No winner")
+                return false;
             }
-            this.resetGame();
+            
+        }
+        function checkDraw(){
+            if (game.index==8){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+    
+
+        function announceWinner(){
+            //Implement announceWinner
         }
         function announceDraw(){
             //Implement announceDraw
         }
     return game;
-    }());   
+    }());  
+
+    resetButton.addEventListener('click', TicTacToe.resetGame);//Listening to the button and reseting the game if it is clicked
+    cells.forEach(cell => cell.addEventListener('click', TicTacToe.takeTurn)); //Listening to the cells and taking a turn if one is clicked
 });
