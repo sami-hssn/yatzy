@@ -1,6 +1,8 @@
 # TicTacToe
 CSI 3140 Summer 2024
+
 Jack Snelgrove 300247435
+
 Sami Hassan 300169285
 
 Assignment 2: Tic Tac Toe Game
