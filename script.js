@@ -17,6 +17,8 @@ window.addEventListener('DOMContentLoaded', () => {
     let playerXWins = 0;
     let playerOWins = 0;
 
+    let currentPlayer='X';
+
     function updateScoreboard() {
         fetch('get_leaderboard.php')
             .then(response => response.json())
@@ -28,13 +30,65 @@ window.addEventListener('DOMContentLoaded', () => {
             .catch(error => console.error('Error updating scoreboard:', error));
     }
 
+    function takeTurn(event){
+        const selectedCell = event.target;
+        const selectedCellIndex = parseInt(selectedCell.getAttribute('data-cell-index')); 
+        console.log(currentPlayer);
+        console.log(selectedCellIndex);
+        updateBoard(selectedCellIndex, currentPlayer)
+                .then(response => {
+                    if (response.success) {
+                        selectedCell.innerHTML = currentPlayer;
+                        if (response.message) {
+                            message.innerText = `${game.player === 'X' ? playerXName : playerOName} Wins!`;
+                            game.status = 'ended';
+                            if (game.player === 'X') {
+                                playerXWins++;
+                                player1Wins.innerText = `${playerXName}: ${playerXWins} Wins`;
+                            } else {    
+                                playerOWins++;
+                                player2Wins.innerText = `${playerOName}: ${playerOWins} Wins`;
+                            }
+                            playAgainButton.style.display = 'block';
+                            finishButton.style.display = 'block';
+    
+                        }
+                        currentPlayer = currentPlayer === 'X' ? 'O' : 'X'; // Switch player
+                    } else {
+                        message.innerHTML= 'here';
+                    }
+                });
+                // Function to make AJAX call to update the board
+                function updateBoard(position, player) {
+                    return new Promise((resolve, reject) => {
+                        const xhr = new XMLHttpRequest();
+                        xhr.open('POST', 'tictactoe.php', true); // Ensure this path is correct
+                        xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+        
+                        xhr.onreadystatechange = function () {
+                            if (xhr.readyState === 4) {
+                                if (xhr.status === 200) {
+                                    resolve(JSON.parse(xhr.responseText));
+                                } else {
+                                    reject('Error: ' + xhr.statusText);
+                                }
+                            }
+                        };
+        
+                        const data = JSON.stringify({ position, player });
+                        xhr.send(data);
+                    });
+                }
+    }
+
+
     const TicTacToe = (function(){
         const game = {};
         game.player = 'X';
         game.index = 0; 
         game.status = 'not started';
         game.state = ['', '', '', '', '', '', '', '', ''];
-
+            /*
         game.takeTurn = function(event){
             const selectedCell = event.target;
             const selectedCellIndex = parseInt(selectedCell.getAttribute('data-cell-index')); 
@@ -66,7 +120,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 message.innerText = "Invalid Move - You can't play in a cell that is already populated";
             }
         }
-
+*/
         game.resetGame = function(){
             game.player = Math.random() < 0.5 ? 'X' : 'O';
             game.index = 0;
@@ -123,7 +177,7 @@ window.addEventListener('DOMContentLoaded', () => {
             if (game.player === 'X') {
                 playerXWins++;
                 player1Wins.innerText = `${playerXName}: ${playerXWins} Wins`;
-            } else {
+            } else {    
                 playerOWins++;
                 player2Wins.innerText = `${playerOName}: ${playerOWins} Wins`;
             }
@@ -196,7 +250,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     playAgainButton.addEventListener('click', TicTacToe.resetGame);
     finishButton.addEventListener('click', TicTacToe.finishGame);
-    cells.forEach(cell => cell.addEventListener('click', TicTacToe.takeTurn));
+    cells.forEach(cell => cell.addEventListener('click', takeTurn));
 
     updateScoreboard();
 });
