@@ -1,150 +1,202 @@
-window.addEventListener('DOMContentLoaded', () => { //Waits for the html to load before running the script
-    const cells = document.querySelectorAll('.cell'); //Connecting to the cells in the html
-    const resetButton = document.getElementById('game--restart'); //Connecting to the reset button in the html 
-    const message = document.getElementById('game--status'); //Connecting to the game status text area in the html 
-    
+window.addEventListener('DOMContentLoaded', () => {
+    const cells = document.querySelectorAll('.cell');
+    const playAgainButton = document.getElementById('game--play-again');
+    const finishButton = document.getElementById('game--finish');
+    const startGameButton = document.getElementById('start-game');
+    const message = document.getElementById('game--status');
+    const playerXNameInput = document.getElementById('playerXName');
+    const playerONameInput = document.getElementById('playerOName');
+    const player1Wins = document.getElementById('player1-wins');
+    const player2Wins = document.getElementById('player2-wins');
+    const initialSetup = document.getElementById('initial-setup');
+    const gameSection = document.getElementById('game');
+    const scoreboard = document.getElementById('scoreboard');
 
-    //TicTacToe object representing a game 
-    var TicTacToe = (function(){
+    let playerXName = '';
+    let playerOName = '';
+    let playerXWins = 0;
+    let playerOWins = 0;
 
-        //Setting Initial state of game
-        var game ={};
-        game.player='X';
-        message.innerText=`${game.player}'s Turn`;
-        game.index=0; 
-        game.status='started';
-        game.state=['', '', '', 
-                    '', '', '', 
-                    '', '', ''];
+    function updateScoreboard() {
+        fetch('get_leaderboard.php')
+            .then(response => response.json())
+            .then(data => {
+                scoreboard.innerHTML = data.map(entry => `
+                    <li>${entry.playerXName}: ${entry.playerXWins} wins, ${entry.playerOName}: ${entry.playerOWins} wins</li>
+                `).join('');
+            })
+            .catch(error => console.error('Error updating scoreboard:', error));
+    }
 
-        
+    const TicTacToe = (function(){
+        const game = {};
+        game.player = 'X';
+        game.index = 0; 
+        game.status = 'not started';
+        game.state = ['', '', '', '', '', '', '', '', ''];
+
         game.takeTurn = function(event){
-            const selectedCell = event.target;//gets the cell that was clicked on event
-            const selectedCellIndex = parseInt(selectedCell.getAttribute('data-cell-index')); //gets the index if the selected cell
-            
-            if (game.status=='ended'){
+            const selectedCell = event.target;
+            const selectedCellIndex = parseInt(selectedCell.getAttribute('data-cell-index')); 
+
+            if (game.status === 'not started') {
+                message.innerText = `Please start the game by entering player names.`;
                 return;
             }
 
-            if (game.state[selectedCellIndex]==''){ //Checks that the player isn't trying to play in a cell that has a symbol already 
-                
-                game.state [selectedCellIndex] = game.player; //Adds players symbol to game
-                selectedCell.innerHTML = game.player; //Adds players symbol to board
-                selectedCell.setAttribute('data-player', game.player); // Sets data-player attribute
-                console.log(game.state); //For debug purposes 
-                
-                //If there is a win, announce it 
+            if (game.status === 'ended'){
+                return;
+            }
+
+            if (game.state[selectedCellIndex] === '') {
+                game.state[selectedCellIndex] = game.player;
+                selectedCell.innerHTML = game.player;
+                selectedCell.setAttribute('data-player', game.player);
+
                 if (checkWin()){
                     announceWinner();
-                    console.log('Winner'); //For debug purposes
-                }
-                
-                //If there is a draw, announce it 
-                else if (checkDraw()){
+                } else if (checkDraw()){
                     announceDraw();
-                    console.log('Draw')
-                }
-                
-                //If no win or draw, prepare for next turn
-                else{
-                    console.log(game.index);
+                } else {
                     game.index++;
                     game.changePlayer();
-                    message.innerText=`${game.player}'s Turn`;
-                    
+                    message.innerText = `${game.player}'s Turn`;
                 }
+            } else {
+                message.innerText = "Invalid Move - You can't play in a cell that is already populated";
             }
-            //Informs player that they cannot play in a cell is already played in 
-            else{
-                message.innerText="Invalid Move - You can't play in a cell that is already populated";
-            }
-
-            
         }
-        //resets the game data 
-        game.resetGame= function(){
+
+        game.resetGame = function(){
             game.player = Math.random() < 0.5 ? 'X' : 'O';
-            game.index=0;
+            game.index = 0;
             game.state.fill('');
             game.status = 'started';
-            message.innerText=`${game.player}'s Turn`;
-            cells.forEach(cells=> cells.innerHTML='');
+            message.innerText = `${game.player}'s Turn`;
+            cells.forEach(cell => {
+                cell.innerHTML = '';
+                cell.removeAttribute('data-player');
+            });
         }
 
-        //Swaps the active player
-        game.changePlayer= function(){
-            if (game.player=='X'){
-                game.player='O';
-            }
-            else{
-                game.player='X';
+        game.finishGame = function() {
+            console.log('Finish game triggered');
+            if (game.status === 'ended' || game.status === 'started') {
+                saveScores(() => {
+                    resetScores();
+                    game.resetGame();
+                    game.status = 'not started';
+                    message.innerText = `Enter player names and start the game.`;
+                    initialSetup.style.display = 'block';
+                    gameSection.style.display = 'none';
+                    playAgainButton.style.display = 'none';
+                    finishButton.style.display = 'none';
+                    updateScoreboard();  // Ensure scoreboard is updated after finishing the game
+                    console.log('Game finished and reset');
+                });
             }
         }
-        //Checked to see if any of the 8 winning conditions are met
+
+        game.changePlayer = function(){
+            game.player = (game.player === 'X') ? 'O' : 'X';
+        }
+
         function checkWin(){
-            
-            //Top row
-            if( game.state[0]==game.player && game.state[1]==game.player  && game.state[2]==game.player ){
-                return true;
-            }
-            //Middle row
-            else if( game.state[3]==game.player && game.state[4]==game.player  && game.state[5]==game.player){
-                return true;
-            }
-            //Bottom row
-            else if( game.state[6]==game.player && game.state[7]==game.player  && game.state[8]==game.player){
-                return true;
-            }
-            //Right column
-            else if( game.state[0]==game.player && game.state[3]==game.player  && game.state[6]==game.player){
-                return true;
-            }
-            //Middle column 
-            else if( game.state[1]==game.player && game.state[4]==game.player  && game.state[7]==game.player){
-                return true;
-            }
-            //Left column
-            else if( game.state[2]==game.player && game.state[5]==game.player  && game.state[8]==game.player){
-                return true;
-            }
-            //left to right diagonal 
-            else if( game.state[0]==game.player && game.state[4]==game.player  && game.state[8]==game.player){
-                return true;
-            }
-            //right to left diagonal 
-            else if( game.state[2]==game.player && game.state[4]==game.player  && game.state[6]==game.player){
-                return true;
-            }
-            else{
-                console.log("No winner")
-                return false;
-            }
-            
+            const winConditions = [
+                [0, 1, 2], [3, 4, 5], [6, 7, 8], 
+                [0, 3, 6], [1, 4, 7], [2, 5, 8], 
+                [0, 4, 8], [2, 4, 6]
+            ];
+
+            return winConditions.some(condition => {
+                return condition.every(index => game.state[index] === game.player);
+            });
         }
-        //If 9 turns have been preformed without a win then it is a draw
+
         function checkDraw(){
-            if (game.index==8){
-                return true;
-            }
-            else{
-                return false;
-            }
+            return game.index === 8;
         }
-    
-        //Display text congratulating winner
+
         function announceWinner(){
-            message.innerText=`${game.player} Wins!`;
+            message.innerText = `${game.player === 'X' ? playerXName : playerOName} Wins!`;
             game.status = 'ended';
+            if (game.player === 'X') {
+                playerXWins++;
+                player1Wins.innerText = `${playerXName}: ${playerXWins} Wins`;
+            } else {
+                playerOWins++;
+                player2Wins.innerText = `${playerOName}: ${playerOWins} Wins`;
+            }
+            playAgainButton.style.display = 'block';
+            finishButton.style.display = 'block';
         }
 
-        //Display text saying there was a draw
         function announceDraw(){
-            message.innerText=`Draw!`;
+            message.innerText = `Draw!`;
             game.status = 'ended';
+            playAgainButton.style.display = 'block';
+            finishButton.style.display = 'block';
         }
 
-    return game;
-    }());  
-    resetButton.addEventListener('click', TicTacToe.resetGame);//Listening to the button and reseting the game if it is clicked
-    cells.forEach(cell => cell.addEventListener('click', TicTacToe.takeTurn)); //Listening to the cells and taking a turn if one is clicked
+        function saveScores(callback) {
+            console.log('Saving scores');
+            fetch('save_scores.php', {
+                method: 'POST',
+                body: JSON.stringify({
+                    playerXName: playerXName,
+                    playerOName: playerOName,
+                    playerXWins: playerXWins,
+                    playerOWins: playerOWins
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Scores saved successfully');
+                    if (typeof callback === 'function') {
+                        callback();
+                    }
+                } else {
+                    console.error('Failed to save scores');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+        
+        function resetScores() {
+            playerXWins = 0;
+            playerOWins = 0;
+            player1Wins.innerText = `${playerXName}: ${playerXWins} Wins`;
+            player2Wins.innerText = `${playerOName}: ${playerOWins} Wins`;
+        }
+
+        return game;
+    }());
+
+    startGameButton.addEventListener('click', () => {
+        playerXName = playerXNameInput.value;
+        playerOName = playerONameInput.value;
+
+        if (playerXName === '' || playerOName === '') {
+            alert('Please enter names for both players.');
+            return;
+        }
+
+        initialSetup.style.display = 'none';
+        gameSection.style.display = 'block';
+        player1Wins.innerText = `${playerXName}: ${playerXWins} Wins`;
+        player2Wins.innerText = `${playerOName}: ${playerOWins} Wins`;
+        TicTacToe.resetGame();
+    });
+
+    playAgainButton.addEventListener('click', TicTacToe.resetGame);
+    finishButton.addEventListener('click', TicTacToe.finishGame);
+    cells.forEach(cell => cell.addEventListener('click', TicTacToe.takeTurn));
+
+    updateScoreboard();
 });

@@ -5,7 +5,11 @@ h1 {
     font-size: 55px;
 }
 
-h3{
+h2 {
+    font-size: 30px;
+}
+
+h3 {
     font-size: 25px;
 }
 
@@ -68,4 +72,14 @@ button {
 
 .cell[data-player="O"] {
     color: green; 
+}
+
+.player-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.player-info span {
+    font-size: 20px;
 }
