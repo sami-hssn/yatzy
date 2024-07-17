@@ -40,9 +40,8 @@ window.addEventListener('DOMContentLoaded', () => {
                     if (response.success) {
                         selectedCell.innerHTML = currentPlayer;
                         if (response.message) {
-                            message.innerText = `${game.player === 'X' ? playerXName : playerOName} Wins!`;
-                            game.status = 'ended';
-                            if (game.player === 'X') {
+                            message.innerText = `${currentPlayer === 'X' ? playerXName : playerOName} Wins!`;
+                            if (currentPlayer === 'X') {
                                 playerXWins++;
                                 player1Wins.innerText = `${playerXName}: ${playerXWins} Wins`;
                             } else {    
