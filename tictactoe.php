@@ -13,7 +13,7 @@ if (!isset($_SESSION['status'])){
 
 function resetGame(){
     $_SESSION['board'] = array_fill(0, 9, '');
-    $_SESSION['state'] = 'not started';
+    $_SESSION['state'] = 'started';
     return null;
 }
 

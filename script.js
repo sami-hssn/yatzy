@@ -18,7 +18,7 @@ window.addEventListener('DOMContentLoaded', () => {
     let playerOWins = 0;
 
     let currentPlayer='X';
-    state= 'not started';
+    let state= 'not started';
 
     function updateScoreboard() {
         fetch('get_leaderboard.php')
@@ -34,32 +34,37 @@ window.addEventListener('DOMContentLoaded', () => {
     function takeTurn(event){
         const selectedCell = event.target;
         const selectedCellIndex = parseInt(selectedCell.getAttribute('data-cell-index')); 
-        console.log(currentPlayer);
-        console.log(selectedCellIndex);
-        console.log(state);
         if (state == 'started'){
             updateBoard(selectedCellIndex, currentPlayer)
                 .then(response => {
                     console.log(response);
                     if (response.success) {
-                        selectedCell.innerHTML = currentPlayer;
-                        if (response.message) {
-                            message.innerText = `${currentPlayer === 'X' ? playerXName : playerOName} Wins!`;
-                            if (currentPlayer === 'X') {
-                                playerXWins++;
-                                player1Wins.innerText = `${playerXName}: ${playerXWins} Wins`;
-                            } else {    
-                                playerOWins++;
-                                player2Wins.innerText = `${playerOName}: ${playerOWins} Wins`;
-                            }
+                        if (response.message== 'It\'s a draw!'){
+                            selectedCell.innerHTML = currentPlayer;
+                            message.innerHTML='It\'s a draw!';
                             playAgainButton.style.display = 'block';
                             finishButton.style.display = 'block';
+                        }
+                        else{
+                            selectedCell.innerHTML = currentPlayer;
+                            if (response.message) {
+                                state= response.state;
+                                message.innerText = `${currentPlayer === 'X' ? playerXName : playerOName} Wins!`;
+                                if (currentPlayer === 'X') {
+                                    playerXWins++;
+                                    player1Wins.innerText = `${playerXName}: ${playerXWins} Wins`;
+                                } else {    
+                                    playerOWins++;
+                                    player2Wins.innerText = `${playerOName}: ${playerOWins} Wins`;
+                                }
+                                playAgainButton.style.display = 'block';
+                                finishButton.style.display = 'block';
 
+                            }
                         }
                         currentPlayer = currentPlayer === 'X' ? 'O' : 'X'; // Switch player
                     } else {
-                        console.log(state);
-                        message.innerHTML= 'here';
+                        message.innerHTML= response.message;
                     }
                 });
             // Function to make AJAX call to update the board
@@ -91,11 +96,12 @@ window.addEventListener('DOMContentLoaded', () => {
     function resetGame() {
         console.log("gello");
         resetPHP().then(response => {
-            console.log(response.message);
             cells.forEach(cell => {
                 cell.innerHTML = '';
                 cell.removeAttribute('data-player');
             });
+            state= response.state;
+            message.innerHTML='';
         }).catch(error => {
             console.error(error);
         });
@@ -127,19 +133,6 @@ window.addEventListener('DOMContentLoaded', () => {
         game.status = 'not started';
         game.state = ['', '', '', '', '', '', '', '', ''];
             
-/*
-        game.resetGame = function(){
-            game.player = Math.random() < 0.5 ? 'X' : 'O';
-            game.index = 0;
-            game.state.fill('');
-            game.status = 'started';
-            message.innerText = `${game.player}'s Turn`;
-            cells.forEach(cell => {
-                cell.innerHTML = '';
-                cell.removeAttribute('data-player');
-            });
-        }
-*/
         game.finishGame = function() {
             console.log('Finish game triggered');
             if (game.status === 'ended' || game.status === 'started') {

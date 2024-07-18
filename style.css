@@ -14,7 +14,7 @@ h3 {
 }
 
 body {
-    /*background-image: url('./docs/design_system/paper.jpg');*/
+    background-image: url('./docs/design_system/paper.jpg');
     font-family: 'Rock Salt', serif;
     display: flex;
     justify-content: center;
@@ -64,6 +64,7 @@ button {
     color: #fff;
     cursor: pointer;
     background-color: red; 
+    justify-content: center;
 }
 
 .cell[data-player="X"] {
