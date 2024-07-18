@@ -1,14 +1,24 @@
 <?php
 
 session_start();
-
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 // Initialize the game board if not already set
 if (!isset($_SESSION['board'])) {
     $_SESSION['board'] = array_fill(0, 9, '');
 }
+if (!isset($_SESSION['status'])){
+    $_SESSION['state'] = 'not started';
+}
+
+function resetGame(){
+    $_SESSION['board'] = array_fill(0, 9, '');
+    $_SESSION['state'] = 'not started';
+    return null;
+}
 
 // Function to check the winner
-function check_winner($board) {
+function check_winner($board, $state) {
     $winning_combinations = [
         [0, 1, 2],
         [3, 4, 5],
@@ -48,25 +58,41 @@ function make_move($position, $player) {
 // Handle AJAX request
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $data = json_decode(file_get_contents('php://input'), true);
-    $position = $data['position'];
-    $player = $data['player'];
-
+    $action = isset($data['action']) ? $data['action'] : 'move';
     $response = [
         'success' => false,
         'message' => '',
+        'state' => $_SESSION['state'],
         'board' => $_SESSION['board']
     ];
 
-    if (make_move($position, $player)) {
+    
+    if ($action === 'reset') {
+        resetGame();
         $response['success'] = true;
+        $response['message'] = 'Game has been reset.';
+        $response['state'] = $_SESSION['state'];
         $response['board'] = $_SESSION['board'];
-        $winner = check_winner($_SESSION['board']);
-        if ($winner) {
-            $response['message'] = $winner === 'Draw' ? 'It\'s a draw!' : "Player $winner wins!";
-            $_SESSION['board'] = array_fill(0, 9, ''); // Reset board after a win or draw
+    }
+
+    elseif ($action === 'move'){
+        $position = $data['position'];
+        $player = $data['player'];
+        if (make_move($position, $player)) {
+            $response['success'] = true;
+            $response['board'] = $_SESSION['board'];
+            $winner = check_winner($_SESSION['board'], $player);
+            if ($winner) {
+                $response['message'] = $winner === 'Draw' ? 'It\'s a draw!' : "Player $winner wins!";
+                $response['state'] = 'ended';
+                $_SESSION['board'] = array_fill(0, 9, ''); // Reset board after a win or draw
+            }
+        } else {
+            $response['message'] = 'Invalid move. Try again.';
         }
-    } else {
-        $response['message'] = 'Invalid move. Try again.';
+    }
+    else {
+        $response['message'] = 'Invalid action.';
     }
 
     header('Content-Type: application/json');

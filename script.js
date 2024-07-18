@@ -18,6 +18,7 @@ window.addEventListener('DOMContentLoaded', () => {
     let playerOWins = 0;
 
     let currentPlayer='X';
+    state= 'not started';
 
     function updateScoreboard() {
         fetch('get_leaderboard.php')
@@ -35,8 +36,11 @@ window.addEventListener('DOMContentLoaded', () => {
         const selectedCellIndex = parseInt(selectedCell.getAttribute('data-cell-index')); 
         console.log(currentPlayer);
         console.log(selectedCellIndex);
-        updateBoard(selectedCellIndex, currentPlayer)
+        console.log(state);
+        if (state == 'started'){
+            updateBoard(selectedCellIndex, currentPlayer)
                 .then(response => {
+                    console.log(response);
                     if (response.success) {
                         selectedCell.innerHTML = currentPlayer;
                         if (response.message) {
@@ -50,76 +54,80 @@ window.addEventListener('DOMContentLoaded', () => {
                             }
                             playAgainButton.style.display = 'block';
                             finishButton.style.display = 'block';
-    
+
                         }
                         currentPlayer = currentPlayer === 'X' ? 'O' : 'X'; // Switch player
                     } else {
+                        console.log(state);
                         message.innerHTML= 'here';
                     }
                 });
-                // Function to make AJAX call to update the board
-                function updateBoard(position, player) {
-                    return new Promise((resolve, reject) => {
-                        const xhr = new XMLHttpRequest();
-                        xhr.open('POST', 'tictactoe.php', true); // Ensure this path is correct
-                        xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
-        
-                        xhr.onreadystatechange = function () {
-                            if (xhr.readyState === 4) {
-                                if (xhr.status === 200) {
-                                    resolve(JSON.parse(xhr.responseText));
-                                } else {
-                                    reject('Error: ' + xhr.statusText);
-                                }
+            // Function to make AJAX call to update the board
+            function updateBoard(position, player) {
+                return new Promise((resolve, reject) => {
+                    const xhr = new XMLHttpRequest();
+                    xhr.open('POST', 'tictactoe.php', true); // Ensure this path is correct
+                    xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+
+                    xhr.onreadystatechange = function () {
+                        if (xhr.readyState === 4) {
+                            if (xhr.status === 200) {
+                                resolve(JSON.parse(xhr.responseText));
+                            } else {
+                                reject('Error: ' + xhr.statusText);
                             }
-                        };
-        
-                        const data = JSON.stringify({ position, player });
-                        xhr.send(data);
-                    });
-                }
+                        }
+                    };
+
+                    const data = JSON.stringify({  action: 'move', position, player });
+                    xhr.send(data);
+                });
+            }
+        }
+        else{            
+            return;
+        }
     }
+    function resetGame() {
+        console.log("gello");
+        resetPHP().then(response => {
+            console.log(response.message);
+            cells.forEach(cell => {
+                cell.innerHTML = '';
+                cell.removeAttribute('data-player');
+            });
+        }).catch(error => {
+            console.error(error);
+        });
+        function resetPHP(){
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', 'tictactoe.php', true);
+                xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
 
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                            resolve(JSON.parse(xhr.responseText));
+                        } else {
+                            reject('Error: ' + xhr.statusText);
+                        }
+                    }
+                };
 
+                const data = JSON.stringify({ action: 'reset' });
+                xhr.send(data);
+            });
+        }
+    }
     const TicTacToe = (function(){
         const game = {};
         game.player = 'X';
         game.index = 0; 
         game.status = 'not started';
         game.state = ['', '', '', '', '', '', '', '', ''];
-            /*
-        game.takeTurn = function(event){
-            const selectedCell = event.target;
-            const selectedCellIndex = parseInt(selectedCell.getAttribute('data-cell-index')); 
-
-            if (game.status === 'not started') {
-                message.innerText = `Please start the game by entering player names.`;
-                return;
-            }
-
-            if (game.status === 'ended'){
-                return;
-            }
-
-            if (game.state[selectedCellIndex] === '') {
-                game.state[selectedCellIndex] = game.player;
-                selectedCell.innerHTML = game.player;
-                selectedCell.setAttribute('data-player', game.player);
-
-                if (checkWin()){
-                    announceWinner();
-                } else if (checkDraw()){
-                    announceDraw();
-                } else {
-                    game.index++;
-                    game.changePlayer();
-                    message.innerText = `${game.player}'s Turn`;
-                }
-            } else {
-                message.innerText = "Invalid Move - You can't play in a cell that is already populated";
-            }
-        }
-*/
+            
+/*
         game.resetGame = function(){
             game.player = Math.random() < 0.5 ? 'X' : 'O';
             game.index = 0;
@@ -131,7 +139,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 cell.removeAttribute('data-player');
             });
         }
-
+*/
         game.finishGame = function() {
             console.log('Finish game triggered');
             if (game.status === 'ended' || game.status === 'started') {
@@ -148,47 +156,6 @@ window.addEventListener('DOMContentLoaded', () => {
                     console.log('Game finished and reset');
                 });
             }
-        }
-
-        game.changePlayer = function(){
-            game.player = (game.player === 'X') ? 'O' : 'X';
-        }
-
-        function checkWin(){
-            const winConditions = [
-                [0, 1, 2], [3, 4, 5], [6, 7, 8], 
-                [0, 3, 6], [1, 4, 7], [2, 5, 8], 
-                [0, 4, 8], [2, 4, 6]
-            ];
-
-            return winConditions.some(condition => {
-                return condition.every(index => game.state[index] === game.player);
-            });
-        }
-
-        function checkDraw(){
-            return game.index === 8;
-        }
-
-        function announceWinner(){
-            message.innerText = `${game.player === 'X' ? playerXName : playerOName} Wins!`;
-            game.status = 'ended';
-            if (game.player === 'X') {
-                playerXWins++;
-                player1Wins.innerText = `${playerXName}: ${playerXWins} Wins`;
-            } else {    
-                playerOWins++;
-                player2Wins.innerText = `${playerOName}: ${playerOWins} Wins`;
-            }
-            playAgainButton.style.display = 'block';
-            finishButton.style.display = 'block';
-        }
-
-        function announceDraw(){
-            message.innerText = `Draw!`;
-            game.status = 'ended';
-            playAgainButton.style.display = 'block';
-            finishButton.style.display = 'block';
         }
 
         function saveScores(callback) {
@@ -234,20 +201,26 @@ window.addEventListener('DOMContentLoaded', () => {
     startGameButton.addEventListener('click', () => {
         playerXName = playerXNameInput.value;
         playerOName = playerONameInput.value;
+        console.log(state);
+
 
         if (playerXName === '' || playerOName === '') {
             alert('Please enter names for both players.');
             return;
         }
+        state= 'started';
+        
+        resetGame();
 
         initialSetup.style.display = 'none';
         gameSection.style.display = 'block';
         player1Wins.innerText = `${playerXName}: ${playerXWins} Wins`;
         player2Wins.innerText = `${playerOName}: ${playerOWins} Wins`;
-        TicTacToe.resetGame();
-    });
 
-    playAgainButton.addEventListener('click', TicTacToe.resetGame);
+
+    }); 
+
+    playAgainButton.addEventListener('click', resetGame);
     finishButton.addEventListener('click', TicTacToe.finishGame);
     cells.forEach(cell => cell.addEventListener('click', takeTurn));
 
