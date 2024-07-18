@@ -1,24 +1,46 @@
 <?php
-
 session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-// Initialize the game board if not already set
+header('Content-Type: application/json');
+ob_start();
+
 if (!isset($_SESSION['board'])) {
     $_SESSION['board'] = array_fill(0, 9, '');
 }
-if (!isset($_SESSION['status'])){
-    $_SESSION['state'] = 'not started';
+if (!isset($_SESSION['state'])){
+    $_SESSION['state'] = 'not started ';
+}
+if (!isset($_SESSION['Xwins']))   {
+    $_SESSION['Xwins']=0;
+}   
+if (!isset($_SESSION['Owins']))   {
+    $_SESSION['Owins']=0;
+} 
+if (!isset($_SESSION['Xname']))   {
+    $_SESSION['Xname']='';
+}   
+if (!isset($_SESSION['Oname']))   {
+    $_SESSION['Oname']='';
+}  
+   
+
+function startGame($playerXname, $playerOname){
+    $_SESSION['state']='started';
+    $_SESSION['Xname']=$playerXname;
+    $_SESSION['Oname']=$playerOname;
+    $_SESSION['Xwins']=0;
+    $_SESSION['Owins']=0;
+    return null;  
 }
 
-function resetGame(){
+
+function resetBoard(){
     $_SESSION['board'] = array_fill(0, 9, '');
     $_SESSION['state'] = 'started';
     return null;
 }
 
 // Function to check the winner
-function check_winner($board, $state) {
+function check_winner($board, $player) {
     $winning_combinations = [
         [0, 1, 2],
         [3, 4, 5],
@@ -54,6 +76,9 @@ function make_move($position, $player) {
     }
     return false;
 }
+function saveScores(){
+
+}
 
 // Handle AJAX request
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -62,17 +87,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $response = [
         'success' => false,
         'message' => '',
+        'winner'=> false, 
+        'pXwins' => $_SESSION['Xwins'],
+        'pOwins' => $_SESSION['Owins'], 
         'state' => $_SESSION['state'],
         'board' => $_SESSION['board']
     ];
 
     
     if ($action === 'reset') {
-        resetGame();
+        resetBoard();
         $response['success'] = true;
-        $response['message'] = 'Game has been reset.';
+        $response['message'] = 'New Game!';
+        $response['pXwins'] = $_SESSION['Xwins'];
+        $response['pOwins'] = $_SESSION['Owins'];
         $response['state'] = $_SESSION['state'];
         $response['board'] = $_SESSION['board'];
+        $response['winner'] = false;
     }
 
     elseif ($action === 'move'){
@@ -80,22 +111,58 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $player = $data['player'];
         if (make_move($position, $player)) {
             $response['success'] = true;
-            $response['board'] = $_SESSION['board'];
             $winner = check_winner($_SESSION['board'], $player);
             if ($winner) {
-                $response['message'] = $winner === 'Draw' ? 'It\'s a draw!' : "Player $winner wins!";
-                $response['state'] = 'ended';
-                $_SESSION['board'] = array_fill(0, 9, ''); // Reset board after a win or draw
+                if ($winner=='X'){
+                    $_SESSION['Xwins'] = $_SESSION['Xwins'] +1;
+                    $response['winner']=$winner;
+                    $response['state'] = 'ended';
+                    $response['message'] = $_SESSION['Xname'].' wins!';
+                }
+                elseif($winner == 'O'){
+                    $_SESSION['Owins'] = $_SESSION['Owins'] +1;
+                    $response['winner']=$winner;
+                    $response['state'] = 'ended';
+                    $response['message'] = $_SESSION['Oname'].' wins!';
+                }
+                else{
+                    $response['winner']=$winner;
+                    $response['state'] = 'ended';
+                    $response['message']= 'Its a Draw!';
+                }
+
+                $_SESSION['board'] = array_fill(0, 9, ''); 
             }
+            $response['pOwins'] = $_SESSION['Owins'];
+            //$response['message'] = $player.'\'s turn';
+            $response['pXwins'] = $_SESSION['Xwins'];
+
         } else {
+            $response['winner'] = false;
             $response['message'] = 'Invalid move. Try again.';
         }
     }
+
+    elseif ($action === 'start'){
+        $playerXname = $data['playerXname'];
+        $playerOname = $data['playerOname'];
+        resetBoard();
+        startGame($playerXname, $playerOname);
+        $response['success'] = true;
+        $response['message'] = 'New Session!';
+        $response['pXwins'] = $_SESSION['Xwins'];
+        $response['pOwins'] = $_SESSION['Owins'];
+        $response['winner']= false;
+        $response['state'] = $_SESSION['state'];
+        $response['board'] = $_SESSION['board'];
+    }
+
     else {
         $response['message'] = 'Invalid action.';
     }
 
-    header('Content-Type: application/json');
+
     echo json_encode($response);
+    ob_end_flush();
 }
 

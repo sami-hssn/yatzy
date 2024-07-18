@@ -57,14 +57,14 @@ section {
 }
 
 button {
-    margin-bottom: 20px;
+    display: block;           
+    margin: 0 auto 20px auto; 
     height: 30px;
     border: none;
     border-radius: 5px;
     color: #fff;
     cursor: pointer;
     background-color: red; 
-    justify-content: center;
 }
 
 .cell[data-player="X"] {

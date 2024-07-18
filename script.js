@@ -4,6 +4,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const finishButton = document.getElementById('game--finish');
     const startGameButton = document.getElementById('start-game');
     const message = document.getElementById('game--status');
+    const startMessage = document.getElementById('start-message');
     const playerXNameInput = document.getElementById('playerXName');
     const playerONameInput = document.getElementById('playerOName');
     const player1Wins = document.getElementById('player1-wins');
@@ -12,8 +13,8 @@ window.addEventListener('DOMContentLoaded', () => {
     const gameSection = document.getElementById('game');
     const scoreboard = document.getElementById('scoreboard');
 
-    let playerXName = '';
-    let playerOName = '';
+    let playerXname = '';
+    let playerOname = '';
     let playerXWins = 0;
     let playerOWins = 0;
 
@@ -39,39 +40,28 @@ window.addEventListener('DOMContentLoaded', () => {
                 .then(response => {
                     console.log(response);
                     if (response.success) {
-                        if (response.message== 'It\'s a draw!'){
-                            selectedCell.innerHTML = currentPlayer;
-                            message.innerHTML='It\'s a draw!';
+                        selectedCell.innerHTML = currentPlayer;
+                        if (response.winner){
                             playAgainButton.style.display = 'block';
                             finishButton.style.display = 'block';
+                            message.innerText=response.message;
                         }
                         else{
-                            selectedCell.innerHTML = currentPlayer;
-                            if (response.message) {
-                                state= response.state;
-                                message.innerText = `${currentPlayer === 'X' ? playerXName : playerOName} Wins!`;
-                                if (currentPlayer === 'X') {
-                                    playerXWins++;
-                                    player1Wins.innerText = `${playerXName}: ${playerXWins} Wins`;
-                                } else {    
-                                    playerOWins++;
-                                    player2Wins.innerText = `${playerOName}: ${playerOWins} Wins`;
-                                }
-                                playAgainButton.style.display = 'block';
-                                finishButton.style.display = 'block';
-
-                            }
+                            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+                            message.innerText=currentPlayer+'\'s turn'; 
                         }
-                        currentPlayer = currentPlayer === 'X' ? 'O' : 'X'; // Switch player
+                        
+                        player1Wins.innerText = playerXname+": "+response.pXwins;
+                        player2Wins.innerText = playerOname+": "+response.pOwins;
+                        
                     } else {
-                        message.innerHTML= response.message;
+                        message.innerText= response.message;
                     }
                 });
-            // Function to make AJAX call to update the board
             function updateBoard(position, player) {
                 return new Promise((resolve, reject) => {
                     const xhr = new XMLHttpRequest();
-                    xhr.open('POST', 'tictactoe.php', true); // Ensure this path is correct
+                    xhr.open('POST', 'tictactoe.php', true);
                     xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
 
                     xhr.onreadystatechange = function () {
@@ -94,14 +84,13 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
     function resetGame() {
-        console.log("gello");
         resetPHP().then(response => {
             cells.forEach(cell => {
                 cell.innerHTML = '';
                 cell.removeAttribute('data-player');
             });
             state= response.state;
-            message.innerHTML='';
+            message.innerText=response.message;
         }).catch(error => {
             console.error(error);
         });
@@ -123,6 +112,63 @@ window.addEventListener('DOMContentLoaded', () => {
 
                 const data = JSON.stringify({ action: 'reset' });
                 xhr.send(data);
+            });
+        }
+    }
+    function startGame() {
+        playerXname = playerXNameInput.value;
+        playerOname = playerONameInput.value;
+
+        startPHP().then(response => {
+            if (playerXname === '' || playerOname === '') {
+                startMessage.innerText=('Please enter names for both players.');
+                return;
+            }
+            console.log(response);
+            initialSetup.style.display = 'none';
+            gameSection.style.display = 'block'; 
+            state= response.state;
+            message.innerText=response.message;
+            player1Wins.innerText = playerXname +' Wins';
+            player2Wins.innerText = playerOname +' Wins';
+
+        }).catch(error => {
+            console.error(error);
+        });
+        function startPHP(){
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', 'tictactoe.php', true);
+                xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                            resolve(JSON.parse(xhr.responseText));
+                        } else {
+                            reject('Error: ' + xhr.statusText);
+                        }
+                    }
+                };
+
+                const data = JSON.stringify({ action: 'start' , playerXname, playerOname});
+                xhr.send(data);
+            });
+        }
+    }
+
+    function finishGamePHP(){
+        if (state === 'ended' || game.status === 'started') {
+            saveScores(() => {
+                resetScores();
+                resetGame();
+                message.innerText = `Enter player names and start the game.`;
+                initialSetup.style.display = 'block';
+                gameSection.style.display = 'none';
+                playAgainButton.style.display = 'none';
+                finishButton.style.display = 'none';
+                updateScoreboard();  // Ensure scoreboard is updated after finishing the game
+                console.log('Game finished and reset');
             });
         }
     }
@@ -191,28 +237,7 @@ window.addEventListener('DOMContentLoaded', () => {
         return game;
     }());
 
-    startGameButton.addEventListener('click', () => {
-        playerXName = playerXNameInput.value;
-        playerOName = playerONameInput.value;
-        console.log(state);
-
-
-        if (playerXName === '' || playerOName === '') {
-            alert('Please enter names for both players.');
-            return;
-        }
-        state= 'started';
-        
-        resetGame();
-
-        initialSetup.style.display = 'none';
-        gameSection.style.display = 'block';
-        player1Wins.innerText = `${playerXName}: ${playerXWins} Wins`;
-        player2Wins.innerText = `${playerOName}: ${playerOWins} Wins`;
-
-
-    }); 
-
+    startGameButton.addEventListener('click', startGame); 
     playAgainButton.addEventListener('click', resetGame);
     finishButton.addEventListener('click', TicTacToe.finishGame);
     cells.forEach(cell => cell.addEventListener('click', takeTurn));

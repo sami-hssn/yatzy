@@ -18,6 +18,7 @@
         <label for="playerOName">Player O Name:</label>
         <input type="text" id="playerOName">
         <br>
+        <p id="start-message"></p>
         <button id="start-game">Start Game</button>
         <h2>Leaderboard</h2>
         <ul id="scoreboard"></ul> <!-- Ensure this is present for displaying the leaderboard -->
@@ -36,13 +37,14 @@
             <div class="cell" data-cell-index="8"></div>
         </div>
         <p id="game--status"></p>
-        <div>
-            <button id="game--play-again" style="display: none;">Play Again</button>
-            <button id="game--finish" style="display: none;">Finish</button>
-        </div>
+
         <div>
             <p id="player1-wins"></p>
             <p id="player2-wins"></p>
+        </div>
+        <div>
+            <button id="game--play-again" style="display: none;">Play Again</button>
+            <button id="game--finish" style="display: none;">Finish</button>
         </div>
     </section>
 </body>
