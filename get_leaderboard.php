@@ -7,3 +7,4 @@ if (!isset($_SESSION['leaderboard'])) {
 
 header('Content-Type: application/json');
 echo json_encode($_SESSION['leaderboard']);
+?>

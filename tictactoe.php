@@ -76,8 +76,52 @@ function make_move($position, $player) {
     }
     return false;
 }
-function saveScores(){
 
+function getLeaderboard() {
+    $filename = 'leaderboard.json';
+    if (file_exists($filename)) {
+        $data = json_decode(file_get_contents($filename), true);
+        return $data;
+    }
+    return [];
+}
+
+
+function saveScores() {
+    $filename = 'leaderboard.json';
+    $leaderboard = getLeaderboard();
+
+    $playerX = [
+        'name' => $_SESSION['Xname'],
+        'wins' => $_SESSION['Xwins']
+    ];
+    $playerO = [
+        'name' => $_SESSION['Oname'],
+        'wins' => $_SESSION['Owins']
+    ];
+
+    // Determine the player with more wins
+    $topPlayer = ($playerX['wins'] > $playerO['wins']) ? $playerX : $playerO;
+
+    // Remove the player with fewer wins from the leaderboard if they exist
+    $leaderboard = array_filter($leaderboard, function($entry) use ($topPlayer) {
+        return $entry['name'] !== $topPlayer['name'];
+    });
+
+    // Add the top player to the leaderboard
+    $leaderboard[] = [
+        'name' => $topPlayer['name'],
+        'wins' => $topPlayer['wins']
+    ];
+
+    // Sort by number of wins in descending order and keep only the top 10
+    usort($leaderboard, function($a, $b) {
+        return $b['wins'] - $a['wins'];
+    });
+    $leaderboard = array_slice($leaderboard, 0, 10);
+
+    // Save the updated leaderboard
+    file_put_contents($filename, json_encode($leaderboard, JSON_PRETTY_PRINT));
 }
 
 // Handle AJAX request
@@ -91,7 +135,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'pXwins' => $_SESSION['Xwins'],
         'pOwins' => $_SESSION['Owins'], 
         'state' => $_SESSION['state'],
-        'board' => $_SESSION['board']
+        'board' => $_SESSION['board'],
+        'leaderboard' => []
     ];
 
     
@@ -156,11 +201,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $response['board'] = $_SESSION['board'];
     }
     elseif ($action === 'finish') {
+        saveScores();
+
         session_unset(); 
         session_destroy(); 
 
         $response['success'] = true;
         $response['message'] = 'Session ended!';
+        $response['leaderboard'] = getLeaderboard();
+    }
+    elseif ($action === 'getLeaderboard') {
+        $response['success'] = true;
+        $response['leaderboard'] = getLeaderboard();
     }
     else {
         $response['message'] = 'Invalid action.';

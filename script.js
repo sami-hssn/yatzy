@@ -22,14 +22,33 @@ window.addEventListener('DOMContentLoaded', () => {
     let state= 'not started';
 
     function updateScoreboard() {
-        fetch('get_leaderboard.php')
-            .then(response => response.json())
-            .then(data => {
-                scoreboard.innerHTML = data.map(entry => `
-                    <li>${entry.playerXName}: ${entry.playerXWins} wins, ${entry.playerOName}: ${entry.playerOWins} wins</li>
-                `).join('');
-            })
-            .catch(error => console.error('Error updating scoreboard:', error));
+        fetch('get_leaderboard.php', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ action: 'getLeaderboard' })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                var leaderboardBody = document.getElementById('leaderboardBody');
+                leaderboardBody.innerHTML = ''; // Clear existing content
+                data.leaderboard.forEach(entry => {
+                    var row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${entry.name}</td>
+                        <td>${entry.wins}</td>
+                    `;
+                    leaderboardBody.appendChild(row);
+                });
+            } else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching leaderboard:', error);
+        });
     }
 
     function takeTurn(event){
@@ -169,6 +188,7 @@ window.addEventListener('DOMContentLoaded', () => {
             });
             initialSetup.style.display = 'block';
             gameSection.style.display = 'none'; 
+            updateScoreboard();
         }).catch(error => {
             console.error(error);
         });
