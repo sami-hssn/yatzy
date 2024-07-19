@@ -87,7 +87,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $response = [
         'success' => false,
         'message' => '',
-        'winner'=> false, 
+        'winner'=> '', 
         'pXwins' => $_SESSION['Xwins'],
         'pOwins' => $_SESSION['Owins'], 
         'state' => $_SESSION['state'],
@@ -103,7 +103,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $response['pOwins'] = $_SESSION['Owins'];
         $response['state'] = $_SESSION['state'];
         $response['board'] = $_SESSION['board'];
-        $response['winner'] = false;
+        $response['winner'] = '';
     }
 
     elseif ($action === 'move'){
@@ -137,7 +137,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $response['pXwins'] = $_SESSION['Xwins'];
 
         } else {
-            $response['winner'] = false;
+            $response['winner'] = '';
             $response['message'] = 'Invalid move. Try again.';
         }
     }
@@ -151,7 +151,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $response['message'] = 'New Session!';
         $response['pXwins'] = $_SESSION['Xwins'];
         $response['pOwins'] = $_SESSION['Owins'];
-        $response['winner']= false;
+        $response['winner']= '';
         $response['state'] = $_SESSION['state'];
         $response['board'] = $_SESSION['board'];
     }
