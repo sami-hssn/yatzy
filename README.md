@@ -14,14 +14,14 @@ Sami Hassan 300169285
 
 ### Summary
 This version of our TicTacToe game is the game game but with the addition of a leaderboard and player names. 
-Each player enters their name and then they play as many rounds as they want. When they finish the session, the top score of the two players is added to the leaderboard on the home screen.
+Each player enters their name and then plays as many rounds as they want. When they finish the session, the top score of the two players is added to the leaderboard on the home screen.
 
-We used a PHP server to store the information about each game, game session, and all-time best scores.
+We used a PHP server to store the information about each game, game session, and all-time best scores. The javascript file makes AJAX requests to the PHP server to know how to update the user interface. 
 
 ## Assignment 2: Tic Tac Toe Game
 
 Summary:
-For our assignment, we built a game of Tic Tac Toe in which two players are playing on the same device.
+For our assignment, we built a game called Tic Tac Toe, in which two players played on the same device.
 
 The game starts by selecting a random player to play first, either X or O.
 ![alt text](./docs/design_system/s1.png)
