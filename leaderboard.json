@@ -18,5 +18,13 @@
     {
         "name": "sami",
         "wins": 1
+    },
+    {
+        "name": "Jack",
+        "wins": 1
+    },
+    {
+        "name": "Snel",
+        "wins": 1
     }
 ]

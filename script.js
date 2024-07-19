@@ -12,6 +12,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const initialSetup = document.getElementById('initial-setup');
     const gameSection = document.getElementById('game');
     const scoreboard = document.getElementById('scoreboard');
+    const tableBody = document.querySelector('#data-table tbody');
 
     let playerXname = '';
     let playerOname = '';
@@ -147,6 +148,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 return;
             }
             console.log(response);
+             
             initialSetup.style.display = 'none';
             gameSection.style.display = 'block'; 
             state= response.state;
@@ -215,75 +217,58 @@ window.addEventListener('DOMContentLoaded', () => {
             });
         }
     }
-    const TicTacToe = (function(){
-        const game = {};
-        game.player = 'X';
-        game.index = 0; 
-        game.status = 'not started';
-        game.state = ['', '', '', '', '', '', '', '', ''];
-            
-        game.finishGame = function() {
-            console.log('Finish game triggered');
-            if (game.status === 'ended' || game.status === 'started') {
-                saveScores(() => {
-                    resetScores();
-                    game.resetGame();
-                    game.status = 'not started';
-                    message.innerText = `Enter player names and start the game.`;
-                    initialSetup.style.display = 'block';
-                    gameSection.style.display = 'none';
-                    playAgainButton.style.display = 'none';
-                    finishButton.style.display = 'none';
-                    updateScoreboard();  // Ensure scoreboard is updated after finishing the game
-                    console.log('Game finished and reset');
-                });
-            }
-        }
+    function getLeaderboard() {
+        leaderboardPHP().then(response => {
+            console.log(response);
+            data = response.leaderboard;
+            data.forEach(item => {
+                const row = document.createElement('tr');
+        
+                // Create table cells for name and wins
+                const nameCell = document.createElement('td');
+                nameCell.textContent = item.name;
+                row.appendChild(nameCell);
+        
+                const winsCell = document.createElement('td');
+                winsCell.textContent = item.wins;
+                row.appendChild(winsCell);
+        
+                // Append the row to the table body
+                tableBody.appendChild(row);
+            });
+        
+        }).catch(error => {
+            console.error(error);
+        });
+        function leaderboardPHP(){
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', 'tictactoe.php', true);
+                xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
 
-        function saveScores(callback) {
-            console.log('Saving scores');
-            fetch('save_scores.php', {
-                method: 'POST',
-                body: JSON.stringify({
-                    playerXName: playerXName,
-                    playerOName: playerOName,
-                    playerXWins: playerXWins,
-                    playerOWins: playerOWins
-                }),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log('Scores saved successfully');
-                    if (typeof callback === 'function') {
-                        callback();
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                            resolve(JSON.parse(xhr.responseText));
+                        } else {
+                            reject('Error: ' + xhr.statusText);
+                        }
                     }
-                } else {
-                    console.error('Failed to save scores');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
+                };
+
+                const data = JSON.stringify({ action: 'finish'});
+                xhr.send(data);
             });
         }
-        
-        function resetScores() {
-            playerXWins = 0;
-            playerOWins = 0;
-            player1Wins.innerText = `${playerXName}: ${playerXWins} Wins`;
-            player2Wins.innerText = `${playerOName}: ${playerOWins} Wins`;
-        }
+    }
+    
 
-        return game;
-    }());
+
 
     startGameButton.addEventListener('click', startGame); 
     playAgainButton.addEventListener('click', resetGame);
     finishButton.addEventListener('click', finishGame);
     cells.forEach(cell => cell.addEventListener('click', takeTurn));
 
-    updateScoreboard();
+    getLeaderboard();
 });
