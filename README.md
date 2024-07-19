@@ -5,7 +5,7 @@ Jack Snelgrove 300247435
 
 Sami Hassan 300169285
 
-## Assignment 2: Tic Tac Toe Game PHP
+## Assignment 3: Tic Tac Toe Game PHP
 
 ### Running the Game
 - Clone this repo
