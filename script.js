@@ -35,10 +35,12 @@ window.addEventListener('DOMContentLoaded', () => {
     function takeTurn(event){
         const selectedCell = event.target;
         const selectedCellIndex = parseInt(selectedCell.getAttribute('data-cell-index')); 
+        console.log(state);
         if (state == 'started'){
             updateBoard(selectedCellIndex, currentPlayer)
                 .then(response => {
                     console.log(response);
+                    state=response.state;
                     if (response.success) {
                         selectedCell.innerHTML = currentPlayer;
                         if (response.winner){
