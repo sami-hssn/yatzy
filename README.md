@@ -5,7 +5,20 @@ Jack Snelgrove 300247435
 
 Sami Hassan 300169285
 
-Assignment 2: Tic Tac Toe Game
+## Assignment 2: Tic Tac Toe Game PHP
+
+### Running the Game
+- Clone this repo
+- run 'php -S localhost:8000`
+- Open the browser and go to this site http://localhost:8000/index.html
+
+### Summary
+This version of our TicTacToe game is the game game but with the addition of a leaderboard and player names. 
+Each player enters their name and then they play as many rounds as they want. When they finish the session, the top score of the two players is added to the leaderboard on the home screen.
+
+We used a PHP server to store the information about each game, game session, and all-time best scores.
+
+## Assignment 2: Tic Tac Toe Game
 
 Summary:
 For our assignment, we built a game of Tic Tac Toe in which two players are playing on the same device.
