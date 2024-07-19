@@ -1,30 +1,23 @@
 [
     {
-        "name": "pookie",
-        "wins": 4
+        "name": "Pookie",
+        "wins": 5
     },
     {
-        "name": "carl",
+        "name": "Carl",
+        "wins": 3
+    },
+    {
+        "name": "Sami",
         "wins": 2
-    },
-    {
-        "name": "aaa",
-        "wins": 2
-    },
-    {
-        "name": "pesto",
-        "wins": 1
-    },
-    {
-        "name": "sami",
-        "wins": 1
     },
     {
         "name": "Jack",
         "wins": 1
     },
     {
-        "name": "Snel",
+        "name": "Kevin",
         "wins": 1
     }
+
 ]

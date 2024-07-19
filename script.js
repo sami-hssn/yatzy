@@ -11,46 +11,14 @@ window.addEventListener('DOMContentLoaded', () => {
     const player2Wins = document.getElementById('player2-wins');
     const initialSetup = document.getElementById('initial-setup');
     const gameSection = document.getElementById('game');
-    const scoreboard = document.getElementById('scoreboard');
     const tableBody = document.querySelector('#data-table tbody');
 
     let playerXname = '';
     let playerOname = '';
-    let playerXWins = 0;
-    let playerOWins = 0;
+
 
     let currentPlayer='X';
     let state= 'not started';
-
-    function updateScoreboard() {
-        fetch('get_leaderboard.php', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({ action: 'getLeaderboard' })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                var leaderboardBody = document.getElementById('leaderboardBody');
-                leaderboardBody.innerHTML = ''; // Clear existing content
-                data.leaderboard.forEach(entry => {
-                    var row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${entry.name}</td>
-                        <td>${entry.wins}</td>
-                    `;
-                    leaderboardBody.appendChild(row);
-                });
-            } else {
-                alert(data.message);
-            }
-        })
-        .catch(error => {
-            console.error('Error fetching leaderboard:', error);
-        });
-    }
 
     function takeTurn(event){
         const selectedCell = event.target;
@@ -192,7 +160,7 @@ window.addEventListener('DOMContentLoaded', () => {
             });
             initialSetup.style.display = 'block';
             gameSection.style.display = 'none'; 
-            updateScoreboard();
+            getLeaderboard();
         }).catch(error => {
             console.error(error);
         });

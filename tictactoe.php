@@ -90,6 +90,10 @@ function getLeaderboard() {
 function saveScores() {
     $filename = 'leaderboard.json';
     $leaderboard = getLeaderboard();
+     
+    if ( $_SESSION['Xname']==''|| $_SESSION['Oname']){
+        return;
+    }
 
     $playerX = [
         'name' => $_SESSION['Xname'],
@@ -99,7 +103,7 @@ function saveScores() {
         'name' => $_SESSION['Oname'],
         'wins' => $_SESSION['Owins']
     ];
-
+    
     // Determine the player with more wins
     $topPlayer = ($playerX['wins'] > $playerO['wins']) ? $playerX : $playerO;
 
@@ -202,7 +206,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     elseif ($action === 'finish') {
         saveScores();
-
         session_unset(); 
         session_destroy(); 
 
@@ -212,6 +215,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     elseif ($action === 'getLeaderboard') {
         $response['success'] = true;
+        
         $response['leaderboard'] = getLeaderboard();
     }
     else {
