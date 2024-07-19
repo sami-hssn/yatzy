@@ -85,6 +85,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
     function resetGame() {
         resetPHP().then(response => {
+            console.log(response);
             cells.forEach(cell => {
                 cell.innerHTML = '';
                 cell.removeAttribute('data-player');
@@ -157,18 +158,38 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    function finishGamePHP(){
-        if (state === 'ended' || game.status === 'started') {
-            saveScores(() => {
-                resetScores();
-                resetGame();
-                message.innerText = `Enter player names and start the game.`;
-                initialSetup.style.display = 'block';
-                gameSection.style.display = 'none';
-                playAgainButton.style.display = 'none';
-                finishButton.style.display = 'none';
-                updateScoreboard();  // Ensure scoreboard is updated after finishing the game
-                console.log('Game finished and reset');
+    function finishGame() {
+        finishPHP().then(response => {
+            console.log(response);
+            playerONameInput.value='';
+            playerXNameInput.value='';
+            cells.forEach(cell => {
+                cell.innerHTML = '';
+                cell.removeAttribute('data-player');
+            });
+            initialSetup.style.display = 'block';
+            gameSection.style.display = 'none'; 
+        }).catch(error => {
+            console.error(error);
+        });
+        function finishPHP(){
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', 'tictactoe.php', true);
+                xhr.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+
+                xhr.onreadystatechange = function () {
+                    if (xhr.readyState === 4) {
+                        if (xhr.status === 200) {
+                            resolve(JSON.parse(xhr.responseText));
+                        } else {
+                            reject('Error: ' + xhr.statusText);
+                        }
+                    }
+                };
+
+                const data = JSON.stringify({ action: 'finish'});
+                xhr.send(data);
             });
         }
     }
@@ -239,7 +260,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
     startGameButton.addEventListener('click', startGame); 
     playAgainButton.addEventListener('click', resetGame);
-    finishButton.addEventListener('click', TicTacToe.finishGame);
+    finishButton.addEventListener('click', finishGame);
     cells.forEach(cell => cell.addEventListener('click', takeTurn));
 
     updateScoreboard();

@@ -134,7 +134,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['board'] = array_fill(0, 9, ''); 
             }
             $response['pOwins'] = $_SESSION['Owins'];
-            //$response['message'] = $player.'\'s turn';
             $response['pXwins'] = $_SESSION['Xwins'];
 
         } else {
@@ -156,7 +155,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $response['state'] = $_SESSION['state'];
         $response['board'] = $_SESSION['board'];
     }
+    elseif ($action === 'finish') {
+        session_unset(); 
+        session_destroy(); 
 
+        $response['success'] = true;
+        $response['message'] = 'Session ended!';
+    }
     else {
         $response['message'] = 'Invalid action.';
     }
