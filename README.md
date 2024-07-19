@@ -18,6 +18,14 @@ Each player enters their name and then plays as many rounds as they want. When t
 
 We used a PHP server to store the information about each game, game session, and all-time best scores. The javascript file makes AJAX requests to the PHP server to know how to update the user interface. 
 
+### Scoreboard Integration
+When a game starts, the two players can play endlessly. Whenever a player wins a round, a point is added to their score. 
+Once the players wish to stop playing, they can hit "Finish" and the player with the most wins has their score saved to the scoreboard. 
+
+The scoreboard is stored in a JSON file. This leaderboard tracks the top 10 winning scores currently saved. The scoreboard is updated after a session is completed. When a new score kicks a player off the leaderboard, the lower score gets removed from the JSON file and the higher score gets placed in the right spot.
+
+![image](https://github.com/user-attachments/assets/c87da734-38bd-4761-a7fd-6f8adcbeb186)
+
 ## Assignment 2: Tic Tac Toe Game
 
 Summary:
