@@ -22,6 +22,21 @@ if (!isset($_SESSION['Oname']))   {
     $_SESSION['Oname']='';
 }  
    
+class Db
+{
+    public static function connect()
+    {
+      return pg_connect("host=localhost port=5432 dbname=samplephp");
+    }
+
+    public static function sql($sql, $dbconn = null)
+    {
+      $dbconn = $dbconn ?: self::connect();
+      $result = pg_query($dbconn, $sql);
+      return pg_fetch_all($result, PGSQL_ASSOC);
+    }
+
+}
 
 function startGame($playerXname, $playerOname){
     $_SESSION['state']='started';
