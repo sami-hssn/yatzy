@@ -18,9 +18,14 @@ Sami Hassan 300169285
 
 #### Starting the Game
 - Clone this repo
+- Open the terminal at the location where the cloned repo was saved
 - run 'php -S localhost:8000`
 - Open the browser and go to this site http://localhost:8000/index.html
 
+### Summary 
+In this version of our game, we changed how our leaderboard works. Instead of the leaderboard scores being stored in a JSON file, we keep them on a  Postgres database. This database has a single table called leaderboard with two columns: name and score. There is no primary key in this table because it is the only table that we have and we don't ever query for a specific entry. Therefore, our table supports multiple entries that may have the same name. 
+
+The way it works is that after two players have finished their session and 'finish game' is clicked, the player with the most wins will have their name and score added to the database. This database is visualized through a table in the initial setup section of our app and is sorted in descending order based on score.
 
 ## Assignment 3: Tic Tac Toe Game PHP
 
