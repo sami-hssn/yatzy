@@ -3,6 +3,8 @@ session_start();
 header('Content-Type: application/json');
 ob_start();
 
+$name = Db::sql("Select * from leaderboard");
+
 if (!isset($_SESSION['board'])) {
     $_SESSION['board'] = array_fill(0, 9, '');
 }
@@ -26,16 +28,37 @@ class Db
 {
     public static function connect()
     {
-      return pg_connect("host=localhost port=5432 dbname=samplephp");
+        $connection = pg_connect("host=localhost port=5432 dbname=tictactoe");
+        
+        if (!$connection) {
+            die("Connection failed: " . pg_last_error());
+        }
+        
+        return $connection;
     }
 
     public static function sql($sql, $dbconn = null)
     {
-      $dbconn = $dbconn ?: self::connect();
-      $result = pg_query($dbconn, $sql);
-      return pg_fetch_all($result, PGSQL_ASSOC);
-    }
+        $dbconn = $dbconn ?: self::connect();
+        
+        if (!$dbconn) {
+            die("Failed to establish a database connection.");
+        }
 
+        $result = pg_query($dbconn, $sql);
+        
+        if (!$result) {
+            die("Error in SQL query: " . pg_last_error());
+        }
+
+        $data = pg_fetch_all($result, PGSQL_ASSOC);
+        
+        if ($data === false) {
+            return []; // Return an empty array if no data found
+        }
+
+        return $data;
+    }
 }
 
 function startGame($playerXname, $playerOname){
@@ -155,6 +178,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'pOwins' => $_SESSION['Owins'], 
         'state' => $_SESSION['state'],
         'board' => $_SESSION['board'],
+        'db'=> $name,
         'leaderboard' => []
     ];
 
