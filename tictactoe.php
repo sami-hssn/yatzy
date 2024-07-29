@@ -128,27 +128,9 @@ function make_move($position, $player) {
     return false;
 }
 
-function getLeaderboard() {
-    $filename = 'leaderboard.json';
-    if (file_exists($filename)) {
-        $data = json_decode(file_get_contents($filename), true);
-        return $data;
-    }
-    return [];
-}
 
 
 function saveScores() {
-    $filename = 'leaderboard.json';
-    $leaderboard = getLeaderboard();
-    error_log('savescores called');
-
-    error_log('In savescores: Xname: ' . $_SESSION['Xname']);
-    error_log('In savescores: Oname: ' . $_SESSION['Oname']);
-    error_log('Xname set: ' . isset($_SESSION['Xname']));
-    error_log('Oname set: ' . isset($_SESSION['Oname']));
-    
-
     $playerX = [
         'name' => $_SESSION['Xname'],
         'wins' => $_SESSION['Xwins']
@@ -157,46 +139,13 @@ function saveScores() {
         'name' => $_SESSION['Oname'],
         'wins' => $_SESSION['Owins']
     ];
-    error_log('2');
-
-    
     // Determine the player with more wins
     $topPlayer = ($playerX['wins'] > $playerO['wins']) ? $playerX : $playerO;
-   
-    /*
-    // Remove the player with fewer wins from the leaderboard if they exist
-    $leaderboard = array_filter($leaderboard, function($entry) use ($topPlayer) {
-        return $entry['name'] !== $topPlayer['name'];
-    });
 
-    // Add the top player to the leaderboard
-    $leaderboard[] = [
-        'name' => $topPlayer['name'],
-        'wins' => $topPlayer['wins']
-    ];
-
-    // Sort by number of wins in descending order and keep only the top 10
-    usort($leaderboard, function($a, $b) {
-        return $b['wins'] - $a['wins'];
-    });
-    $leaderboard = array_slice($leaderboard, 0, 10);
-
-    // Save the updated leaderboard
-    file_put_contents($filename, json_encode($leaderboard, JSON_PRETTY_PRINT));
-    */
-
+ 
     $sql = "INSERT INTO leaderboard (name, score) VALUES ($1, $2)";
     $params = [$topPlayer['name'], $topPlayer['wins']];
     Db::insert($sql, $params);
-    error_log('here');
-
-    // Debugging: Check if the data was inserted
-    $data = Db::sql("SELECT * FROM leaderboard WHERE name = $1", [$topPlayer['name']]);
-    if (empty($data)) {
-        error_log("Data insertion failed for player: " . $topPlayer['name']);
-    } else {
-        error_log("Data successfully inserted for player: " . $topPlayer['name']);
-    }
 }
 
 // Handle AJAX request
@@ -211,8 +160,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'pOwins' => $_SESSION['Owins'], 
         'state' => $_SESSION['state'],
         'board' => $_SESSION['board'],
-        'db'=> Db::sql("Select * from leaderboard"), 
-        'leaderboard' => []
+        'db'=> []
     ];
 
     
@@ -277,30 +225,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $response['board'] = $_SESSION['board'];
     }
     elseif ($action === 'finish') {
-        error_log('In finish Xname: ' . $_SESSION['Xname']);
-        error_log('In finish Oname: ' . $_SESSION['Oname']);
-        error_log('Finish action triggered.');
         saveScores();
-        error_log('After saveScores.');
     
         session_unset();
-        error_log('After session_unset.');
         session_destroy();
-        error_log('After session_destroy.');
     
         $response['success'] = true;
+        $response['db']= Db::sql("Select * from leaderboard ORDER BY score DESC");
         $response['message'] = 'Session ended!';
-        $response['leaderboard'] = getLeaderboard();
     }
     elseif ($action === 'getLeaderboard') {
         $response['success'] = true;
-        $response['leaderboard'] = getLeaderboard();
+        $response['db']= Db::sql("Select * from leaderboard ORDER BY score DESC");
+        $response['message'] = 'Leaderbaord got';
+        
     }
     else {
         $response['message'] = 'Invalid action.';
     }
-
-
     echo json_encode($response);
     ob_end_flush();
 }

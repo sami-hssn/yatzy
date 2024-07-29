@@ -188,7 +188,9 @@ window.addEventListener('DOMContentLoaded', () => {
     function getLeaderboard() {
         leaderboardPHP().then(response => {
             console.log(response);
-            data = response.leaderboard;
+            data = response.db;
+            console.log(data);
+            tableBody.innerHTML = '';
             data.forEach(item => {
                 const row = document.createElement('tr');
         
@@ -198,7 +200,7 @@ window.addEventListener('DOMContentLoaded', () => {
                 row.appendChild(nameCell);
         
                 const winsCell = document.createElement('td');
-                winsCell.textContent = item.wins;
+                winsCell.textContent = item.score;
                 row.appendChild(winsCell);
         
                 // Append the row to the table body
