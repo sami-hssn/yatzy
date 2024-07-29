@@ -224,7 +224,7 @@ window.addEventListener('DOMContentLoaded', () => {
                     }
                 };
 
-                const data = JSON.stringify({ action: 'finish'});
+                const data = JSON.stringify({ action: 'getLeaderboard'});
                 xhr.send(data);
             });
         }

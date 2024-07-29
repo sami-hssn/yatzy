@@ -3,7 +3,6 @@ session_start();
 header('Content-Type: application/json');
 ob_start();
 
-$name = Db::sql("Select * from leaderboard");
 
 if (!isset($_SESSION['board'])) {
     $_SESSION['board'] = array_fill(0, 9, '');
@@ -26,41 +25,55 @@ if (!isset($_SESSION['Oname']))   {
    
 class Db
 {
+    private static $connection;
+
     public static function connect()
     {
-        $connection = pg_connect("host=localhost port=5432 dbname=tictactoe");
-        
-        if (!$connection) {
-            die("Connection failed: " . pg_last_error());
+        if (!self::$connection) {
+            $connectionString = "host=localhost port=5432 dbname=tictactoe";
+            self::$connection = pg_connect($connectionString);
+            
+            if (!self::$connection) {
+                die("Connection failed: " . pg_last_error());
+            }
         }
-        
-        return $connection;
+        return self::$connection;
     }
 
-    public static function sql($sql, $dbconn = null)
+    public static function sql($sql, $params = [])
     {
-        $dbconn = $dbconn ?: self::connect();
-        
-        if (!$dbconn) {
-            die("Failed to establish a database connection.");
-        }
-
-        $result = pg_query($dbconn, $sql);
+        $dbconn = self::connect();
+        $result = pg_query_params($dbconn, $sql, $params);
         
         if (!$result) {
             die("Error in SQL query: " . pg_last_error());
         }
 
         $data = pg_fetch_all($result, PGSQL_ASSOC);
-        
-        if ($data === false) {
-            return []; // Return an empty array if no data found
-        }
+        return $data === false ? [] : $data;
+    }
 
-        return $data;
+    public static function insert($sql, $params)
+    {
+        $dbconn = self::connect();
+        
+        if (!$dbconn) {
+            error_log("Database connection failed.");
+            die("Database connection failed.");
+        }
+        error_log("Database connection success.");
+        $result = pg_query_params($dbconn, $sql, $params);
+        
+        if (!$result) {
+            error_log("Error in SQL query: " . pg_last_error());
+            error_log("SQL: " . $sql);
+            error_log("Params: " . print_r($params, true));
+            die("Error in SQL query: " . pg_last_error());
+        } else {
+            error_log("Insert successful: " . $sql);
+        }
     }
 }
-
 function startGame($playerXname, $playerOname){
     $_SESSION['state']='started';
     $_SESSION['Xname']=$playerXname;
@@ -128,10 +141,13 @@ function getLeaderboard() {
 function saveScores() {
     $filename = 'leaderboard.json';
     $leaderboard = getLeaderboard();
-     
-    if ( $_SESSION['Xname']==''|| $_SESSION['Oname']){
-        return;
-    }
+    error_log('savescores called');
+
+    error_log('In savescores: Xname: ' . $_SESSION['Xname']);
+    error_log('In savescores: Oname: ' . $_SESSION['Oname']);
+    error_log('Xname set: ' . isset($_SESSION['Xname']));
+    error_log('Oname set: ' . isset($_SESSION['Oname']));
+    
 
     $playerX = [
         'name' => $_SESSION['Xname'],
@@ -141,10 +157,13 @@ function saveScores() {
         'name' => $_SESSION['Oname'],
         'wins' => $_SESSION['Owins']
     ];
+    error_log('2');
+
     
     // Determine the player with more wins
     $topPlayer = ($playerX['wins'] > $playerO['wins']) ? $playerX : $playerO;
-
+   
+    /*
     // Remove the player with fewer wins from the leaderboard if they exist
     $leaderboard = array_filter($leaderboard, function($entry) use ($topPlayer) {
         return $entry['name'] !== $topPlayer['name'];
@@ -164,6 +183,20 @@ function saveScores() {
 
     // Save the updated leaderboard
     file_put_contents($filename, json_encode($leaderboard, JSON_PRETTY_PRINT));
+    */
+
+    $sql = "INSERT INTO leaderboard (name, score) VALUES ($1, $2)";
+    $params = [$topPlayer['name'], $topPlayer['wins']];
+    Db::insert($sql, $params);
+    error_log('here');
+
+    // Debugging: Check if the data was inserted
+    $data = Db::sql("SELECT * FROM leaderboard WHERE name = $1", [$topPlayer['name']]);
+    if (empty($data)) {
+        error_log("Data insertion failed for player: " . $topPlayer['name']);
+    } else {
+        error_log("Data successfully inserted for player: " . $topPlayer['name']);
+    }
 }
 
 // Handle AJAX request
@@ -178,7 +211,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'pOwins' => $_SESSION['Owins'], 
         'state' => $_SESSION['state'],
         'board' => $_SESSION['board'],
-        'db'=> $name,
+        'db'=> Db::sql("Select * from leaderboard"), 
         'leaderboard' => []
     ];
 
@@ -244,17 +277,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $response['board'] = $_SESSION['board'];
     }
     elseif ($action === 'finish') {
+        error_log('In finish Xname: ' . $_SESSION['Xname']);
+        error_log('In finish Oname: ' . $_SESSION['Oname']);
+        error_log('Finish action triggered.');
         saveScores();
-        session_unset(); 
-        session_destroy(); 
-
+        error_log('After saveScores.');
+    
+        session_unset();
+        error_log('After session_unset.');
+        session_destroy();
+        error_log('After session_destroy.');
+    
         $response['success'] = true;
         $response['message'] = 'Session ended!';
         $response['leaderboard'] = getLeaderboard();
     }
     elseif ($action === 'getLeaderboard') {
         $response['success'] = true;
-        
         $response['leaderboard'] = getLeaderboard();
     }
     else {
