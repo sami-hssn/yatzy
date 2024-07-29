@@ -5,6 +5,23 @@ Jack Snelgrove 300247435
 
 Sami Hassan 300169285
 
+## Assignment 4: Tic Tac Toe Game PHP with Postgres Database
+
+### Running the Game
+#### Prerequisites
+- Confirm PHP is installed: `php --version`
+- Confirm PostgreSQL is installed: `psql --version`
+
+#### Initialize Database
+- run: `psql -c CREATE DATABASE tictactoe`
+- run: `CREATE TABLE leaderboard(name varchar(50), score int);`
+
+#### Starting the Game
+- Clone this repo
+- run 'php -S localhost:8000`
+- Open the browser and go to this site http://localhost:8000/index.html
+
+
 ## Assignment 3: Tic Tac Toe Game PHP
 
 ### Running the Game
