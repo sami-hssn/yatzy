@@ -27,6 +27,14 @@ In this version of our game, we changed how our leaderboard works. Instead of th
 
 The way it works is that after two players have finished their session and 'finish game' is clicked, the player with the most wins will have their name and score added to the database. This database is visualized through a table in the initial setup section of our app and is sorted in descending order based on score.
 
+### Player Perspective
+After arriving at localhost:8000/index.html, both players will enter their names and select start game. 
+
+This will bring them to a new screen where the game will take place. Both players take turns selecting cells on the game board. Once a player has three of their symbols in a row, they will win the game. The players then have the option to play again or to finish their session. 
+
+Once they are done and select 'finish game' the players will be brought back to the initial screen where they can see the winner's score reflected in the leaderboard table.
+
+
 ## Assignment 3: Tic Tac Toe Game PHP
 
 ### Running the Game
@@ -42,7 +50,7 @@ We used a PHP server to store the information about each game, game session, and
 
 ### Scoreboard Integration
 When a game starts, the two players can play endlessly. Whenever a player wins a round, a point is added to their score. 
-Once the players wish to stop playing, they can hit "Finish" and the player with the most wins has their score saved to the scoreboard. 
+Once the players wish to stop playing, they can hit "Finish" and the player with the most wins has their score saved on the scoreboard. 
 
 The scoreboard is stored in a JSON file. This leaderboard tracks the top 10 winning scores currently saved. The scoreboard is updated after a session is completed. When a new score kicks a player off the leaderboard, the lower score gets removed from the JSON file and the higher score gets placed in the right spot.
 
