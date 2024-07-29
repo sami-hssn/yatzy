@@ -30,9 +30,17 @@ The way it works is that after two players have finished their session and 'fini
 ### Player Perspective
 After arriving at localhost:8000/index.html, both players will enter their names and select start game. 
 
+<img width="440" alt="Screenshot 2024-07-29 at 5 52 57 PM" src="https://github.com/user-attachments/assets/aa735613-b1b4-40d1-8f7f-2f277d37fb9b">
+
+
 This will bring them to a new screen where the game will take place. Both players take turns selecting cells on the game board. Once a player has three of their symbols in a row, they will win the game. The players then have the option to play again or to finish their session. 
 
+<img width="465" alt="Screenshot 2024-07-29 at 5 54 13 PM" src="https://github.com/user-attachments/assets/e92d2224-ba4b-47bf-8472-0d1e0ba92050">
+
+
 Once they are done and select 'finish game' the players will be brought back to the initial screen where they can see the winner's score reflected in the leaderboard table.
+
+<img width="454" alt="Screenshot 2024-07-29 at 5 54 29 PM" src="https://github.com/user-attachments/assets/47ca2e2f-6ddb-4b5b-8499-6c357f114a49">
 
 
 ## Assignment 3: Tic Tac Toe Game PHP
